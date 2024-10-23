@@ -9,28 +9,21 @@ workflows:
       - name: Install Flutter dependencies
         script: flutter pub get
 
-      - name: Install CocoaPods
-        script: |
-          sudo gem install cocoapods --no-document || true
-          pod repo update
-
-      - name: Clean up Pods and install dependencies
+      - name: Clean CocoaPods and Derived Data
         script: |
           cd ios
+          rm -rf ~/Library/Developer/Xcode/DerivedData
           rm -rf Pods Podfile.lock
           pod deintegrate || true
           pod install --verbose
           pod repo update
 
-      - name: Regenerate Runner Scheme
+      - name: Regenerate Scheme
         script: |
           cd ios
-          # Create a new scheme for the Runner project if it's not properly configured
-          xcodebuild -workspace Runner.xcworkspace -scheme Runner -configuration Debug build -list
-          # Ensure the scheme is shared
-          xcodebuild -project Runner.xcodeproj -scheme Runner -configuration Release -derivedDataPath build
-          # Share the scheme
-          xcrun xcodebuild -project Runner.xcodeproj -scheme Runner -list
+          # Ensure scheme is available and shared
+          xcodebuild -list -workspace Runner.xcworkspace
+          xcodebuild -scheme Runner -workspace Runner.xcworkspace -configuration Debug build -allowProvisioningUpdates
 
       - name: Build iOS app
         script: |
