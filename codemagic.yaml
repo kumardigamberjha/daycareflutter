@@ -6,8 +6,10 @@ workflows:
       flutter: stable
       xcode: latest
     scripts:
-      - name: Install Flutter dependencies
-        script: flutter pub get
+      - name: Clean Flutter and iOS Build
+        script: |
+          flutter clean
+          flutter pub get
 
       - name: Clean CocoaPods and Derived Data
         script: |
