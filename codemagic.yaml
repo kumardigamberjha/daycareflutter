@@ -1,25 +1,31 @@
-workflows:
-  ios-workflow:
-    name: iOS Build Workflow
-    max_build_duration: 60
-    environment:
-      flutter: stable
-      xcode: latest
-      cocoapods: default
-    scripts:
-      - name: Install Flutter dependencies
-        script: flutter pub get
-      - name: Install or update CocoaPods
-        script: |
-          sudo gem install cocoapods
-          pod repo update
-      - name: Clean up Pods and install dependencies
-        script: |
-          cd ios
-          rm -rf Pods Podfile.lock
-          pod install --verbose
-      - name: Build iOS app
-        script: flutter build ios --release --no-codesign
-    artifacts:
-      - build/ios/iphoneos/*.app
-      - build/ios/iphoneos/*.ipa
+ios-workflow:
+  name: iOS Build Workflow
+  max_build_duration: 60
+  environment:
+    flutter: stable
+    xcode: latest
+    cocoapods: default
+  scripts:
+    - name: Install Flutter dependencies
+      script: flutter pub get
+
+    - name: Install or update CocoaPods
+      script: |
+        sudo gem install cocoapods --no-document || true
+        pod repo update
+
+    - name: Clean up Pods and install dependencies
+      script: |
+        cd ios
+        rm -rf Pods Podfile.lock
+        pod deintegrate || true
+        pod setup || true
+        pod install --verbose
+        pod repo update
+
+    - name: Build iOS app
+      script: flutter build ios --release --no-codesign
+
+  artifacts:
+    - build/ios/iphoneos/*.app
+    - build/ios/iphoneos/*.ipa
