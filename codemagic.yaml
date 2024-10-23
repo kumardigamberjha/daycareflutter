@@ -5,12 +5,11 @@ workflows:
     environment:
       flutter: stable
       xcode: latest
-      cocoapods: default
     scripts:
       - name: Install Flutter dependencies
         script: flutter pub get
 
-      - name: Install or update CocoaPods
+      - name: Install CocoaPods
         script: |
           sudo gem install cocoapods --no-document || true
           pod repo update
@@ -20,9 +19,13 @@ workflows:
           cd ios
           rm -rf Pods Podfile.lock
           pod deintegrate || true
-          pod setup || true
           pod install --verbose
           pod repo update
+
+      - name: Ensure Scheme Configuration
+        script: |
+          xcodebuild -list -workspace ios/Runner.xcworkspace
+          xcodebuild -workspace ios/Runner.xcworkspace -scheme Runner -configuration Release build
 
       - name: Build iOS app
         script: |
