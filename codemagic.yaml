@@ -22,14 +22,15 @@ workflows:
           pod install --verbose
           pod repo update
 
-      - name: Ensure Scheme Supports Build Action
+      - name: Regenerate Runner Scheme
         script: |
-          # Display all available schemes
-          xcodebuild -list -workspace ios/Runner.xcworkspace
-          # Regenerate the Runner scheme if necessary
-          xcodebuild -scheme Runner -workspace ios/Runner.xcworkspace -configuration Debug
-          # Make sure the scheme is shared and supports the build action
-          xcodebuild -workspace ios/Runner.xcworkspace -scheme Runner -configuration Release build -allowProvisioningUpdates
+          cd ios
+          # Create a new scheme for the Runner project if it's not properly configured
+          xcodebuild -workspace Runner.xcworkspace -scheme Runner -configuration Debug build -list
+          # Ensure the scheme is shared
+          xcodebuild -project Runner.xcodeproj -scheme Runner -configuration Release -derivedDataPath build
+          # Share the scheme
+          xcrun xcodebuild -project Runner.xcodeproj -scheme Runner -list
 
       - name: Build iOS app
         script: |
