@@ -9,28 +9,41 @@ workflows:
     scripts:
       - name: Clean Flutter and CocoaPods caches
         script: |
+          echo "Cleaning Flutter project..."
           flutter clean || { echo "Flutter clean failed"; exit 1; }
+          echo "Cleaning CocoaPods cache..."
           cd ios
           pod cache clean --all || { echo "CocoaPods cache clean failed"; exit 1; }
           cd ..
 
       - name: Install Flutter dependencies
-        script: flutter pub get
-
-      - name: Install or update CocoaPods
         script: |
+          echo "Installing Flutter dependencies..."
+          flutter pub get || { echo "Flutter pub get failed"; exit 1; }
+
+      - name: Install CocoaPods
+        script: |
+          echo "Installing CocoaPods..."
           sudo gem install cocoapods || { echo "CocoaPods installation failed"; exit 1; }
+          pod setup || { echo "CocoaPods setup failed"; exit 1; }
+
+      - name: Update CocoaPods repo
+        script: |
+          echo "Updating CocoaPods repository..."
           pod repo update || { echo "CocoaPods repo update failed"; exit 1; }
 
       - name: Clean up Pods and install dependencies
         script: |
+          echo "Cleaning up Pods and installing dependencies..."
           cd ios
           rm -rf Pods Podfile.lock || { echo "Failed to remove Pods directory"; exit 1; }
           pod install --verbose || { echo "CocoaPods installation failed"; exit 1; }
           cd ..
 
       - name: Build iOS app
-        script: flutter build ios --release --no-codesign || { echo "iOS build failed"; exit 1; }
+        script: |
+          echo "Building iOS app..."
+          flutter build ios --release --no-codesign || { echo "iOS build failed"; exit 1; }
 
     artifacts:
       - build/ios/iphoneos/*.app
