@@ -22,10 +22,14 @@ workflows:
           pod install --verbose
           pod repo update
 
-      - name: Ensure Scheme Configuration
+      - name: Ensure Scheme Supports Build Action
         script: |
+          # Display all available schemes
           xcodebuild -list -workspace ios/Runner.xcworkspace
-          xcodebuild -workspace ios/Runner.xcworkspace -scheme Runner -configuration Release build
+          # Regenerate the Runner scheme if necessary
+          xcodebuild -scheme Runner -workspace ios/Runner.xcworkspace -configuration Debug
+          # Make sure the scheme is shared and supports the build action
+          xcodebuild -workspace ios/Runner.xcworkspace -scheme Runner -configuration Release build -allowProvisioningUpdates
 
       - name: Build iOS app
         script: |
