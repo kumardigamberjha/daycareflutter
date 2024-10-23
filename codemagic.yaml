@@ -7,19 +7,31 @@ workflows:
       xcode: latest
       cocoapods: default
     scripts:
+      - name: Clean Flutter and CocoaPods caches
+        script: |
+          flutter clean || { echo "Flutter clean failed"; exit 1; }
+          cd ios
+          pod cache clean --all || { echo "CocoaPods cache clean failed"; exit 1; }
+          cd ..
+
       - name: Install Flutter dependencies
         script: flutter pub get
+
       - name: Install or update CocoaPods
         script: |
-          sudo gem install cocoapods
-          pod repo update
+          sudo gem install cocoapods || { echo "CocoaPods installation failed"; exit 1; }
+          pod repo update || { echo "CocoaPods repo update failed"; exit 1; }
+
       - name: Clean up Pods and install dependencies
         script: |
           cd ios
-          rm -rf Pods Podfile.lock
-          pod install --verbose
+          rm -rf Pods Podfile.lock || { echo "Failed to remove Pods directory"; exit 1; }
+          pod install --verbose || { echo "CocoaPods installation failed"; exit 1; }
+          cd ..
+
       - name: Build iOS app
-        script: flutter build ios --release --no-codesign
+        script: flutter build ios --release --no-codesign || { echo "iOS build failed"; exit 1; }
+
     artifacts:
       - build/ios/iphoneos/*.app
       - build/ios/iphoneos/*.ipa
