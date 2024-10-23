@@ -25,7 +25,8 @@ workflows:
           pod repo update
 
       - name: Build iOS app
-        script: flutter build ios --release --no-codesign
+        script: |
+          set -o pipefail && flutter build ios --release --no-codesign | xcpretty
 
     artifacts:
       - build/ios/iphoneos/*.app
