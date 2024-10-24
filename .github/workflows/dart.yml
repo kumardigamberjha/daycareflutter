@@ -14,10 +14,17 @@ jobs:
         with:
           channel: 'stable'
           architecture: x64
+
       - run: flutter pub get
       
-
+      # Install CocoaPods and ensure dependencies are updated
+      - run: brew install cocoapods
       - run: pod repo update
+        working-directory: ios
+      - run: pod cache clean --all
+        working-directory: ios
+      - run: rm -rf ios/Pods ios/Podfile.lock
+      - run: pod install
         working-directory: ios
 
       - run: flutter build ios --release --no-codesign
