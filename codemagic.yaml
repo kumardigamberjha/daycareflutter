@@ -1,49 +1,31 @@
 workflows:
-  ios-build:
-    name: iOS-ipa-build
-
-on:
-  workflow_dispatch:
-
-jobs:
-  build-ios:
-    name: 🎉 iOS Build
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v3
-
-      - uses: subosito/flutter-action@v2
-        with:
-          channel: 'stable'
-          architecture: x64
-      - run: flutter pub get
-      
-
-      - run: pod repo update
-        working-directory: ios
-
-      - run: flutter build ios --release --no-codesign
-
-      - run: mkdir Payload
-        working-directory: build/ios/iphoneos
-
-      - run: mv Runner.app/ Payload
-        working-directory: build/ios/iphoneos
-
-      - name: Zip output
-        run: zip -qq -r -9 FlutterIpaExport.ipa Payload
-        working-directory: build/ios/iphoneos
-
-      - name: Upload binaries to release
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: build/ios/iphoneos/FlutterIpaExport.ipa
-          tag: v1.0
-          overwrite: true
-          body: "This is first release"
-
-      - name: Build iOS app
+  build_ios_unsigned:
+    name: Build iOS App without Signing
+    instance_type: mac_mini
+    environment:
+      vars:
+        FLUTTER_CHANNEL: stable
+    triggering:
+      events:
+        - push
+    scripts:
+      - name: Set up Flutter
         script: |
-          echo "Building iOS app..."
-          flutter build ios --release --no-codesign || { echo "iOS build failed"; exit 1; }
+          # Install Flutter and switch to the desired channel
+          git clone https://github.com/flutter/flutter.git
+          export PATH="$PATH:`pwd`/flutter/bin"
+          flutter channel $FLUTTER_CHANNEL
+          flutter upgrade
+          flutter doctor -v
+      - name: Install dependencies
+        script: flutter pub get
+      - name: Build iOS unsigned release
+        script: |
+          # Build the app in release mode without code signing
+          flutter build ipa --release --no-codesign
+    artifacts:
+      - build/ios/ipa/*.ipa
+    publishing:
+      email:
+        recipients:
+          - kumardigamberjha@gmail.com
