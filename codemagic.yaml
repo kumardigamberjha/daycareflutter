@@ -1,7 +1,7 @@
 workflows:
   build_ios_unsigned:
     name: Build iOS App without Signing
-    instance_type: mac_mini
+    instance_type: mac_m2_ventura  # Use macOS M2 Ventura for improved performance
     environment:
       vars:
         FLUTTER_CHANNEL: stable
