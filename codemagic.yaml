@@ -1,33 +1,16 @@
 workflows:
-  build_ios_unsigned:
-    name: Build iOS App without Signing
-    instance_type: mac_mini_m2
+  ios-workflow:
+    name: iOS Workflow
     environment:
-      vars:
-        FLUTTER_CHANNEL: stable
-    triggering:
-      events:
-        - push
+      # Set up environment with Flutter and CocoaPods
+      xcode: latest
+      cocoapods: default
     scripts:
-      - name: Set up Flutter
-        script: |
-          git clone https://github.com/flutter/flutter.git
-          export PATH="$PATH:`pwd`/flutter/bin"
-          flutter channel $FLUTTER_CHANNEL
-          flutter upgrade
-          flutter doctor -v
       - name: Install dependencies
-        script: flutter pub get
-      - name: Set up CocoaPods
         script: |
+          flutter pub get
           cd ios
           pod install
           cd ..
-      - name: Build iOS unsigned release
-        script: flutter build ipa --release --no-codesign
-    artifacts:
-      - build/ios/ipa/*.ipa
-    publishing:
-      email:
-        recipients:
-          - kumardigamberjha@gmail.com
+      - name: Build iOS
+        script: flutter build ios --release
